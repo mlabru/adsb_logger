@@ -36,12 +36,15 @@ def main():
     # data
     ls_date = datetime.datetime.now().strftime("%Y%m%d.%H%M")
         
+    # goto exec dir
+    os.chdir(os.path.dirname(sys.argv[0]))
+
     # create out file: adsb_logger.<host>.<data>.<hora>.dat
-    lfh_dat = open("logs/adsb_logger.{}.{}.dat".format(ls_host, ls_date), 'w')
+    lfh_dat = open("logs/adsb_logger.{}.{}.dat".format(ls_host, ls_date), "w")
     assert lfh_dat
 
     # create control file: adsb_logger.<host>.<data>.<hora>.ctl
-    lfh_ctl = open("logs/adsb_logger.{}.{}.ctl".format(ls_host, ls_date), 'w')
+    lfh_ctl = open("logs/adsb_logger.{}.{}.ctl".format(ls_host, ls_date), "w")
     assert lfh_ctl
 
     # create the thread gps inquirer
