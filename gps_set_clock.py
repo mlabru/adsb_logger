@@ -7,6 +7,7 @@ gps_set_clock
 
 # python library
 import datetime
+#import logging
 import sys
 import time
 
@@ -47,35 +48,46 @@ def __set_time(time_tuple):
 # -------------------------------------------------------------------------------------------------
 def main():
 
-    try:
-        # read stdin 
-        for ls_data in sys.stdin:
+    print "Current date and time (before): ", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            # invalid NMEA sentence ?
-            if "$GP" != ls_data[0:3]:
-                # next
-                continue
+    # forever until...
+    while True:
+        try:
+            # read stdin
+            ls_data = sys.stdin.readline()
 
-            # parse NMEA sentence
-            ls_msg = pynmea2.NMEASentence.parse(ls_data)
-
-            # clock message ?
-            if "$GPRMC" == ls_data[0:6]:
-                # set clock time
-                __set_time((ls_msg.datestamp.year,
-                            ls_msg.datestamp.month,
-                            ls_msg.datestamp.day,
-                            ls_msg.timestamp.hour,
-                            ls_msg.timestamp.minute,
-                            ls_msg.timestamp.second,
-                            int(ls_msg.timestamp.microsecond / 1000.)))
-
-                # ok, quit
+            if not ls_data:
+                # empty line, quit
                 break
 
-    # em case de erro...
-    except KeyboardInterrupt:
-       pass
+        # em caso de erro...
+        except KeyboardInterrupt:
+            # user interrupt, quit
+            break
+
+        # invalid NMEA sentence ?
+        if "$GP" != ls_data[0:3]:
+            # next
+            continue
+
+        # parse NMEA sentence
+        ls_msg = pynmea2.NMEASentence.parse(ls_data)
+
+        # clock message ?
+        if "$GPRMC" == ls_data[0:6]:
+            # set clock time
+            __set_time((ls_msg.datestamp.year,
+                        ls_msg.datestamp.month,
+                        ls_msg.datestamp.day,
+                        ls_msg.timestamp.hour,
+                        ls_msg.timestamp.minute,
+                        ls_msg.timestamp.second,
+                        int(ls_msg.timestamp.microsecond / 1000.)))
+
+            # ok, quit
+            break
+
+    print "Current date and time (after): ", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # -------------------------------------------------------------------------------------------------
 # this is the bootstrap process
