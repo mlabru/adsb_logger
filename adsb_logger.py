@@ -36,13 +36,11 @@ import gps_inquirer as gpi
 # M_LOG = logging.getLogger(__name__)
 # M_LOG.setLevel(logging.DEBUG)
 
-# lines for adsb inquirer
-M_LIN_ADS_1 = 1
-M_LIN_ADS_2 = 2
-
-# lines for gps inquirer
-M_LIN_GPS_1 = 3
-M_LIN_GPS_2 = 4
+# display lines
+M_LIN_SYS = 1
+M_LIN_DAT = 2
+M_LIN_GPS = 3
+M_LIN_ADS = 4
 
 # -------------------------------------------------------------------------------------------------
 def get_wifi():
@@ -51,6 +49,9 @@ def get_wifi():
     """
     # logger
     # M_LOG.info(">> get_wifi")
+
+    # init SSID
+    ls_ssid = ">no wifi<"
 
     # get iwconfig output
     ls_scan_output = subprocess.check_output(["iwconfig", "wlan0"])
@@ -61,7 +62,7 @@ def get_wifi():
         # ESSID token ?
         if ls_tok.startswith("ESSID:"):
             # get SSID
-            ls_ssid = ls_tok.split('"')[1]
+            return ls_tok.split('"')[1]
 
     # return
     return ls_ssid
@@ -82,9 +83,17 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
     # forever...until
     while fthr_gpsi.v_running:
 
-        # show adsb display
-        f_lcd.lcd_display_string("H:{} W:{}".format(os.uname()[1], get_wifi()), M_LIN_ADS_1, 0)
-        f_lcd.lcd_display_string("S:{:04d} X:{:04d} E:{:04d}".format(fthr_adsi.i_short, fthr_adsi.i_extended, fthr_adsi.i_error), M_LIN_ADS_2, 0)
+        # 12345678901234567890
+        #  icbox-21 sophosAir
+
+        # show system line
+        f_lcd.lcd_display_string(" {} {}".format(os.uname()[1], get_wifi()), M_LIN_SYS, 0)
+
+        # 12345678901234567890
+        #  99/99/99  99:99:99
+
+        # show date line
+        f_lcd.lcd_display_string(" {}".format(time.strftime("%d/%m/%y  %H:%M:%S")), M_LIN_DAT, 0)
 
         # latitude
         lf_lat = fthr_gpsi.f_latitude
@@ -98,9 +107,22 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
         # lf_alt = fthr_gpsi.f_altitude
         # ls_alt = "{:0.1f}".format(lf_alt) if lf_alt is not None else "None"
 
-        # show gps display
-        f_lcd.lcd_display_string("F:{} P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS_1, 0)
-        f_lcd.lcd_display_string("DT:{}".format(time.strftime("%d/%m/%y %H:%M:%S")), M_LIN_GPS_2, 0)
+        # 12345678901234567890
+        # F:0  P:-12.34/-12.34
+
+        # show gps line
+        f_lcd.lcd_display_string("F:{}  P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS, 0)
+
+        # ajusta para display
+        li_short = fthr_adsi.i_short % 10000
+        li_extended = fthr_adsi.i_extended % 10000
+        li_error = fthr_adsi.i_error % 10000 
+
+        # 12345678901234567890
+        # S:0000 X:0000 E:0000
+
+        # show adsb line
+        f_lcd.lcd_display_string("S:{:4d} X:{:4d} E:{:4d}".format(li_short, li_extended, li_error), M_LIN_ADS, 0)
 
         # sleep 1s
         time.sleep(1)
