@@ -19,6 +19,7 @@ import datetime
 import logging
 import os
 import sys
+import threading
 import time
 
 # i2c lcd
@@ -71,7 +72,7 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
         # ls_alt = "{:0.1f}".format(lf_alt) if lf_alt is not None else "None"
 
         # show display
-        f_lcd.lcd_display_string("DT: {}".format(time.strftime("%d/%m/%y %H:%M:%S")), M_LIN_GPS_1, 0)
+        f_lcd.lcd_display_string("DT:{}".format(time.strftime("%d/%m/%y %H:%M:%S")), M_LIN_GPS_1, 0)
         f_lcd.lcd_display_string("F:{} P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS_2, 0)
 
         # sleep 1s
