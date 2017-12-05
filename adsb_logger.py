@@ -35,13 +35,13 @@ import gps_inquirer as gpi
 # M_LOG = logging.getLogger(__name__)
 # M_LOG.setLevel(logging.DEBUG)
 
-# lines for gps inquirer
-M_LIN_GPS_1 = 1
-M_LIN_GPS_2 = 2
-
 # lines for adsb inquirer
-M_LIN_ADS_1 = 3
-M_LIN_ADS_2 = 4
+M_LIN_ADS_1 = 1
+M_LIN_ADS_2 = 2
+
+# lines for gps inquirer
+M_LIN_GPS_1 = 3
+M_LIN_GPS_2 = 4
 
 # -------------------------------------------------------------------------------------------------
 def update_display(f_lcd, fthr_gpsi, fthr_adsi):
@@ -59,6 +59,10 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
     # forever...until
     while fthr_gpsi.v_running:
 
+        # show adsb display
+        f_lcd.lcd_display_string("H:{}".format(os.uname()[1]), M_LIN_ADS_1, 0)
+        f_lcd.lcd_display_string("S:{:04d} X:{:04d} E:{:04d}".format(fthr_adsi.i_short, fthr_adsi.i_extended, fthr_adsi.i_error), M_LIN_ADS_2, 0)
+
         # latitude
         lf_lat = fthr_gpsi.f_latitude
         ls_lat = "{:0.2f}".format(lf_lat) if lf_lat is not None else "None"
@@ -71,9 +75,9 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
         # lf_alt = fthr_gpsi.f_altitude
         # ls_alt = "{:0.1f}".format(lf_alt) if lf_alt is not None else "None"
 
-        # show display
-        f_lcd.lcd_display_string("DT:{}".format(time.strftime("%d/%m/%y %H:%M:%S")), M_LIN_GPS_1, 0)
-        f_lcd.lcd_display_string("F:{} P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS_2, 0)
+        # show gps display
+        f_lcd.lcd_display_string("F:{} P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS_1, 0)
+        f_lcd.lcd_display_string("DT:{}".format(time.strftime("%d/%m/%y %H:%M:%S")), M_LIN_GPS_2, 0)
 
         # sleep 1s
         time.sleep(1)
@@ -141,6 +145,7 @@ def main():
 
         # stop running
         lthr_gpsi.v_running = False
+
         # wait for the threads to finish what it's doing
         lthr_gpsi.join()
         lthr_adsi.join()
