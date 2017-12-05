@@ -15,7 +15,7 @@ __date__ = "2017/11"
 # < imports >--------------------------------------------------------------------------------------
             
 # python library
-import logging
+# import logging
 import os
 import threading
 import time
@@ -26,8 +26,8 @@ import gps
 # < module defs >----------------------------------------------------------------------------------
     
 # logger
-M_LOG = logging.getLogger(__name__)
-M_LOG.setLevel(logging.DEBUG)
+# M_LOG = logging.getLogger(__name__)
+# M_LOG.setLevel(logging.DEBUG)
 
 # counters
 M_CALIBRA_COUNT = 20
@@ -141,7 +141,7 @@ class GPSInquirer(threading.Thread):
             self.__fh_ctl.flush()
 
             # logger
-            M_LOG.info("init_position: {}/{}({})/{}({})".format(self.__f_latitude, self.__f_longitude, li_count_2d, self.__f_altitude, li_count_3d))
+            # M_LOG.info("init_position: {}/{}({})/{}({})".format(self.__f_latitude, self.__f_longitude, li_count_2d, self.__f_altitude, li_count_3d))
 
     # ---------------------------------------------------------------------------------------------
     def get_position(self):
@@ -200,10 +200,6 @@ class GPSInquirer(threading.Thread):
         # log station: time, station no
         self.__fh_ctl.write("$STN,{:0.7f},{}\n".format(time.time(), ls_serial))
         self.__fh_ctl.flush()
-
-        # get initial position
-        # lthr_cal_pos = threading.Thread(target=self.init_position, args=(M_CALIBRA_COUNT,))
-        # lthr_cal_pos.start()
 
         # get initial position
         self.init_position(M_CALIBRA_COUNT)
@@ -265,6 +261,21 @@ class GPSInquirer(threading.Thread):
     # data
     # =============================================================================================
             
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def f_altitude(self):
+        return self.__f_altitude
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def f_latitude(self):
+        return self.__f_latitude
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def f_longitude(self):
+        return self.__f_longitude
+
     # ---------------------------------------------------------------------------------------------
     @property
     def v_running(self):

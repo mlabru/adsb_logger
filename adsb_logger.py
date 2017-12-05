@@ -21,9 +21,61 @@ import os
 import sys
 import time
 
+# i2c lcd
+import I2C_LCD_driver
+
 # adsb_logger
 import adsb_inquirer as adi
 import gps_inquirer as gpi
+
+# < module defs >----------------------------------------------------------------------------------
+
+# logger
+# M_LOG = logging.getLogger(__name__)
+# M_LOG.setLevel(logging.DEBUG)
+
+# lines for gps inquirer
+M_LIN_GPS_1 = 1
+M_LIN_GPS_2 = 2
+
+# lines for adsb inquirer
+M_LIN_ADS_1 = 3
+M_LIN_ADS_2 = 4
+
+# -------------------------------------------------------------------------------------------------
+def update_display(f_lcd, fthr_gpsi, fthr_adsi):
+    """
+    update display
+    """
+    # logger
+    # M_LOG.info(">> update_display")
+
+    # check input
+    assert f_lcd 
+    assert fthr_gpsi 
+    assert fthr_adsi
+
+    # forever...until
+    while fthr_gpsi.v_running:
+
+        # latitude
+        lf_lat = fthr_gpsi.f_latitude
+        ls_lat = "{:0.2f}".format(lf_lat) if lf_lat is not None else "None"
+
+        # longitude
+        lf_lng = fthr_gpsi.f_longitude
+        ls_lng = "{:0.2f}".format(lf_lng) if lf_lng is not None else "None"
+
+        # altitude
+        # lf_alt = fthr_gpsi.f_altitude
+        # ls_alt = "{:0.1f}".format(lf_alt) if lf_alt is not None else "None"
+
+        # show display
+        f_lcd.lcd_display_string("DT: {}".format(time.strftime("%d/%m/%y %H:%M:%S")), M_LIN_GPS_1, 0)
+        f_lcd.lcd_display_string("F:{} P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS_2, 0)
+
+        # sleep 1s
+        time.sleep(1)
 
 # -------------------------------------------------------------------------------------------------
 def main():
@@ -48,21 +100,37 @@ def main():
     assert lfh_ctl
 
     # create the thread gps inquirer
-    l_gpsi = gpi.GPSInquirer(lfh_ctl)
-    assert l_gpsi
+    lthr_gpsi = gpi.GPSInquirer(lfh_ctl)
+    assert lthr_gpsi
 
     # create the thread adsb inquirer
-    l_adsi = adi.ADSBInquirer(l_gpsi, lfh_dat)
-    assert l_adsi
+    lthr_adsi = adi.ADSBInquirer(lthr_gpsi, lfh_dat)
+    assert lthr_adsi
+
+    # create lcd driver
+    l_lcd = I2C_LCD_driver.lcd()
+    assert l_lcd
+
+    # clear screen
+    l_lcd.lcd_clear()
+
+    # create thread update display
+    lthr_upd_dsp = threading.Thread(target=update_display, args=(l_lcd, lthr_gpsi, lthr_adsi))
+    assert lthr_upd_dsp 
 
     try:
         # start it up
-        l_gpsi.start()
+        lthr_gpsi.start()
 
         # start it up
-        l_adsi.start()
+        lthr_adsi.start()
 
-        while l_gpsi.v_running:
+        # start update display
+        lthr_upd_dsp.start()
+
+        # forever...until
+        while lthr_gpsi.v_running:
+            # sleep 1s
             time.sleep(1)
 
     # em caso de erro...
@@ -71,10 +139,11 @@ def main():
         print "killing threads..."
 
         # stop running
-        l_gpsi.v_running = False
+        lthr_gpsi.v_running = False
         # wait for the threads to finish what it's doing
-        l_gpsi.join()
-        l_adsi.join()
+        lthr_gpsi.join()
+        lthr_adsi.join()
+        lthr_upd_dsp.join()
 
     # close output file
     lfh_dat.close()
