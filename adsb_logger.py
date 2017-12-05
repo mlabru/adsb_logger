@@ -18,6 +18,7 @@ __date__ = "2017/11"
 import datetime
 import logging
 import os
+import subprocess
 import sys
 import threading
 import time
@@ -44,6 +45,28 @@ M_LIN_GPS_1 = 3
 M_LIN_GPS_2 = 4
 
 # -------------------------------------------------------------------------------------------------
+def get_wifi():
+    """
+    get_wifi
+    """
+    # logger
+    # M_LOG.info(">> get_wifi")
+
+    # get iwconfig output
+    ls_scan_output = subprocess.check_output(["iwconfig", "wlan0"])
+    # M_LOG.debug("ls_scan_output: {}".format(ls_scan_output))
+
+    # for all output tokens...
+    for ls_tok in ls_scan_output.split():
+        # ESSID token ?
+        if ls_tok.startswith("ESSID:"):
+            # get SSID
+            ls_ssid = ls_tok.split('"')[1]
+
+    # return
+    return ls_ssid
+
+# -------------------------------------------------------------------------------------------------
 def update_display(f_lcd, fthr_gpsi, fthr_adsi):
     """
     update display
@@ -60,7 +83,7 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
     while fthr_gpsi.v_running:
 
         # show adsb display
-        f_lcd.lcd_display_string("H:{}".format(os.uname()[1]), M_LIN_ADS_1, 0)
+        f_lcd.lcd_display_string("H:{} W:{}".format(os.uname()[1], get_wifi()), M_LIN_ADS_1, 0)
         f_lcd.lcd_display_string("S:{:04d} X:{:04d} E:{:04d}".format(fthr_adsi.i_short, fthr_adsi.i_extended, fthr_adsi.i_error), M_LIN_ADS_2, 0)
 
         # latitude
