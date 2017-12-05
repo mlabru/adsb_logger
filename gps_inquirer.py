@@ -11,12 +11,11 @@ initial release (Linux/Python)
 __version__ = "$revision: 0.1$"
 __author__ = "Milton Abrunhosa"
 __date__ = "2017/11"
-        
+
 # < imports >--------------------------------------------------------------------------------------
-            
+
 # python library
 # import logging
-import os
 import threading
 import time
 
@@ -24,7 +23,7 @@ import time
 import gps
 
 # < module defs >----------------------------------------------------------------------------------
-    
+
 # logger
 # M_LOG = logging.getLogger(__name__)
 # M_LOG.setLevel(logging.DEBUG)
@@ -33,7 +32,7 @@ import gps
 M_CALIBRA_COUNT = 20
 M_POSITION_COUNT = 300
 M_WEIGHT_COUNT = 1000
-    
+
 # < class GPSInquirer >----------------------------------------------------------------------------
 
 class GPSInquirer(threading.Thread):
@@ -47,7 +46,7 @@ class GPSInquirer(threading.Thread):
         """
         # logger
         # M_LOG.info(">> __init__")
-        
+
         # check input
         assert ffh_ctl
 
@@ -60,7 +59,7 @@ class GPSInquirer(threading.Thread):
         # starting the stream of info
         self.__session = gps.gps(mode=gps.WATCH_ENABLE)  # |gps.WATCH_NEWSTYLE)
         assert self.__session
-        
+
         # position
         self.__f_latitude = None
         self.__f_longitude = None
@@ -70,12 +69,12 @@ class GPSInquirer(threading.Thread):
 
         # setting the thread running to true
         self.__v_running = True
-   
+
     # ---------------------------------------------------------------------------------------------
     def init_position(self, fi_count=M_CALIBRA_COUNT):
         """
         get initial position
-        """        
+        """
         # logger
         # M_LOG.info(">> init_position")
 
@@ -147,55 +146,23 @@ class GPSInquirer(threading.Thread):
     def get_position(self):
         """
         get position
-        """        
+        """
         # logger
         # M_LOG.info(">> get_position")
 
         # return
         return (self.__f_latitude, self.__f_longitude, self.__f_altitude)
-        
-    # ---------------------------------------------------------------------------------------------
-    def get_serial(self):
-        """
-        extract serial from cpuinfo file
-        """
-        # logger
-        # M_LOG.info(">> get_serial")
-        
-        # init string
-        ls_serial = "0000000000000000"
-
-        try:
-            # open cpuinfo
-            lfh_in = open("/proc/cpuinfo", 'r')
-
-            # scan cpuinfo lines....
-            for ls_line in lfh_in:
-                # serial no line ?
-                if "Serial" == ls_line[0:6]:
-                    # get serial number
-                    ls_serial = ls_line[10:26]
-
-            # close file
-            lfh_in.close()
-
-        # em caso de erro
-        except:
-            ls_serial = None
-     
-        # return 
-        return ls_serial
 
     # ---------------------------------------------------------------------------------------------
     def run(self):
         """
         run
-        """        
+        """
         # logger
         # M_LOG.info(">> run")
-        
+
         # get station number
-        ls_serial = self.get_serial()
+        ls_serial = get_serial()
 
         # log station: time, station no
         self.__fh_ctl.write("$STN,{:0.7f},{}\n".format(time.time(), ls_serial))
@@ -260,7 +227,7 @@ class GPSInquirer(threading.Thread):
     # =============================================================================================
     # data
     # =============================================================================================
-            
+
     # ---------------------------------------------------------------------------------------------
     @property
     def f_altitude(self):
@@ -284,10 +251,42 @@ class GPSInquirer(threading.Thread):
     @v_running.setter
     def v_running(self, f_val):
         self.__v_running = f_val
-        
+
     # ---------------------------------------------------------------------------------------------
     @property
     def session(self):
         return self.__session
+
+# -------------------------------------------------------------------------------------------------
+def get_serial():
+    """
+    extract serial from cpuinfo file
+    """
+    # logger
+    # M_LOG.info(">> get_serial")
+
+    # init string
+    ls_serial = "0000000000000000"
+
+    try:
+        # open cpuinfo
+        lfh_in = open("/proc/cpuinfo", 'r')
+
+        # scan cpuinfo lines....
+        for ls_line in lfh_in:
+            # serial no line ?
+            if "Serial" == ls_line[0:6]:
+                # get serial number
+                ls_serial = ls_line[10:26]
+
+        # close file
+        lfh_in.close()
+
+    # em caso de erro...
+    except:
+        ls_serial = None
+
+    # return
+    return ls_serial
 
 # < the end >--------------------------------------------------------------------------------------

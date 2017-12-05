@@ -52,8 +52,8 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
     # M_LOG.info(">> update_display")
 
     # check input
-    assert f_lcd 
-    assert fthr_gpsi 
+    assert f_lcd
+    assert fthr_gpsi
     assert fthr_adsi
 
     # forever...until
@@ -92,7 +92,7 @@ def main():
 
     # data
     ls_date = datetime.datetime.now().strftime("%Y%m%d.%H%M")
-        
+
     # goto exec dir
     os.chdir(os.path.dirname(sys.argv[0]))
 
@@ -121,7 +121,7 @@ def main():
 
     # create thread update display
     lthr_upd_dsp = threading.Thread(target=update_display, args=(l_lcd, lthr_gpsi, lthr_adsi))
-    assert lthr_upd_dsp 
+    assert lthr_upd_dsp
 
     try:
         # start it up
@@ -169,5 +169,5 @@ if "__main__" == __name__:
 
     # end app
     sys.exit()
-    
+
 # <the end>----------------------------------------------------------------------------------------

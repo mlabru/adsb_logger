@@ -11,9 +11,9 @@ initial release (Linux/Python)
 __version__ = "$revision: 0.1$"
 __author__ = "Milton Abrunhosa"
 __date__ = "2017/11"
-        
+
 # < imports >--------------------------------------------------------------------------------------
-            
+
 # python library
 # import logging
 import sys
@@ -23,11 +23,11 @@ import time
 # from timeit import default_timer as timer
 
 # < module defs >----------------------------------------------------------------------------------
-    
+
 # logger
 # M_LOG = logging.getLogger(__name__)
 # M_LOG.setLevel(logging.DEBUG)
-    
+
 # < class ADSBInquirer >---------------------------------------------------------------------------
 
 class ADSBInquirer(threading.Thread):
@@ -41,7 +41,7 @@ class ADSBInquirer(threading.Thread):
         """
         # logger
         # M_LOG.info(">> __init__")
-        
+
         # check input
         assert f_gpsi
         assert ffh_dat
@@ -59,18 +59,18 @@ class ADSBInquirer(threading.Thread):
         self.__i_error = 0
         self.__i_short = 0
         self.__i_extended = 0
-        
+
         # setting the thread running to true
         self.__v_running = True
-   
+
     # ---------------------------------------------------------------------------------------------
     def run(self):
         """
         run
-        """        
+        """
         # logger
         # M_LOG.info(">> run")
-        
+
         try:
             # forever...
             while self.__gps.v_running:
@@ -89,7 +89,7 @@ class ADSBInquirer(threading.Thread):
                     self.__i_extended += 1
 
                 # short squitter ?
-                elif len(ls_line) >= 16:    
+                elif len(ls_line) >= 16:
                     # increment short counter
                     self.__i_short += 1
 
@@ -100,7 +100,7 @@ class ADSBInquirer(threading.Thread):
 
         # em caso de erro...
         except (KeyboardInterrupt, SystemExit):
-            # flush stdout  
+            # flush stdout
             sys.stdout.flush()
 
             # stop thread
