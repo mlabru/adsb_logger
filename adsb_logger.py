@@ -81,7 +81,7 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
     assert fthr_adsi
 
     # forever...until
-    while fthr_gpsi.v_running:
+    while fthr_adsi.v_running and fthr_gpsi.v_running:
 
         # 12345678901234567890
         #  icbox-21 sophosAir
@@ -108,10 +108,10 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
         # ls_alt = "{:0.1f}".format(lf_alt) if lf_alt is not None else "None"
 
         # 12345678901234567890
-        # F:0  P:-12.34/-12.34
+        # F:0 P:-12.34/-012.34
 
         # show gps line
-        f_lcd.lcd_display_string("F:{}  P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS, 0)
+        f_lcd.lcd_display_string("F:{} P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS, 0)
 
         # ajusta para display
         li_short = fthr_adsi.i_short % 10000
@@ -135,7 +135,7 @@ def main():
     # hostname
     ls_host = os.uname()[1]
 
-    # data
+    # data atual
     ls_date = datetime.datetime.now().strftime("%Y%m%d.%H%M")
 
     # goto exec dir
@@ -180,8 +180,8 @@ def main():
 
         # forever...until
         while lthr_gpsi.v_running:
-            # sleep 1s
-            time.sleep(1)
+            # sleep 5s
+            time.sleep(5)
 
     # em caso de erro...
     except (KeyboardInterrupt, SystemExit):

@@ -93,7 +93,7 @@ class GPSInquirer(threading.Thread):
             if not "TPV" == self.__session.data.get("class"):
                 continue
 
-            # fix 2D or 3D ?
+            # 2D or 3D fix ?
             if self.__session.fix.mode in [2, 3]:
                 # latitude
                 lf_lat += self.__session.fix.latitude
@@ -103,7 +103,7 @@ class GPSInquirer(threading.Thread):
                 lf_lng += self.__session.fix.longitude
                 # M_LOG.debug("fix.longitude: {}".format(lf_lng))
 
-                # fix 3D ?
+                # 3D fix ?
                 if 3 == self.__session.fix.mode:
                     # altitude
                     lf_alt += self.__session.fix.altitude
@@ -189,7 +189,7 @@ class GPSInquirer(threading.Thread):
                 # next
                 continue
 
-            # fix 2D or 3D ?
+            # 2D or 3D fix ?
             if (self.__session.fix.mode in [2, 3]) and (self.__i_pos_count >= M_CALIBRA_COUNT):
                 # counter
                 li_count = self.__i_pos_count
@@ -203,7 +203,7 @@ class GPSInquirer(threading.Thread):
                 # longitude
                 lf_lng = ((lf_lng * li_count) + self.__session.fix.longitude) / self.__i_pos_count
 
-                # fix 3D ?
+                # 3D fix ?
                 if 3 == self.__session.fix.mode:
                     # altitude
                     lf_alt = ((lf_alt * li_count) + self.__session.fix.altitude) / self.__i_pos_count
