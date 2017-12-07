@@ -124,8 +124,8 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
         # show adsb line
         f_lcd.lcd_display_string("S:{:4d} X:{:4d} E:{:4d}".format(li_short, li_extended, li_error), M_LIN_ADS, 0)
 
-        # sleep 1s
-        time.sleep(1)
+        # sleep (update each 5s)
+        time.sleep(5)
 
 # -------------------------------------------------------------------------------------------------
 def main():
@@ -180,8 +180,8 @@ def main():
 
         # forever...until
         while lthr_gpsi.v_running:
-            # sleep 1s
-            time.sleep(1)
+            # sleep 5s
+            time.sleep(5)
 
     # em caso de erro...
     except (KeyboardInterrupt, SystemExit):
@@ -191,10 +191,10 @@ def main():
         # stop running
         lthr_gpsi.v_running = False
 
-        # wait for the threads to finish what it's doing
-        lthr_gpsi.join()
-        lthr_adsi.join()
-        lthr_upd_dsp.join()
+    # wait for the threads to finish what it's doing
+    lthr_gpsi.join()
+    lthr_adsi.join()
+    lthr_upd_dsp.join()
 
     # close output file
     lfh_dat.close()
