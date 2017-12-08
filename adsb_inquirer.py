@@ -20,8 +20,6 @@ import sys
 import threading
 import time
 
-# from timeit import default_timer as timer
-
 # < module defs >----------------------------------------------------------------------------------
 
 # logger

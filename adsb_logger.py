@@ -42,6 +42,9 @@ M_LIN_DAT = 2
 M_LIN_GPS = 3
 M_LIN_ADS = 4
 
+# flag DISPLAY
+M_DISPLAY = False
+
 # -------------------------------------------------------------------------------------------------
 def get_wifi():
     """
@@ -68,7 +71,7 @@ def get_wifi():
     return ls_ssid
 
 # -------------------------------------------------------------------------------------------------
-def update_display(f_lcd, fthr_gpsi, fthr_adsi):
+def update_display(fthr_gpsi, fthr_adsi):
     """
     update display
     """
@@ -76,9 +79,20 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
     # M_LOG.info(">> update_display")
 
     # check input
-    assert f_lcd
     assert fthr_gpsi
     assert fthr_adsi
+
+    # no display ?
+    if not M_DISPLAY:
+        # return
+        return
+
+    # create lcd driver
+    l_lcd = I2C_LCD_driver.lcd()
+    assert l_lcd
+
+    # clear screen
+    l_lcd.lcd_clear()
 
     # forever...until
     while fthr_adsi.v_running and fthr_gpsi.v_running:
@@ -116,7 +130,7 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
         # ajusta para display
         li_short = fthr_adsi.i_short % 10000
         li_extended = fthr_adsi.i_extended % 10000
-        li_error = fthr_adsi.i_error % 10000 
+        li_error = fthr_adsi.i_error % 10000
 
         # 12345678901234567890
         # S:0000 X:0000 S:99/9
@@ -157,15 +171,8 @@ def main():
     lthr_adsi = adi.ADSBInquirer(lthr_gpsi, lfh_dat)
     assert lthr_adsi
 
-    # create lcd driver
-    l_lcd = I2C_LCD_driver.lcd()
-    assert l_lcd
-
-    # clear screen
-    l_lcd.lcd_clear()
-
     # create thread update display
-    lthr_upd_dsp = threading.Thread(target=update_display, args=(l_lcd, lthr_gpsi, lthr_adsi))
+    lthr_upd_dsp = threading.Thread(target=update_display, args=(lthr_gpsi, lthr_adsi))
     assert lthr_upd_dsp
 
     try:
