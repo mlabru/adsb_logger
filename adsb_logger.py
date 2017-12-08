@@ -119,13 +119,13 @@ def update_display(f_lcd, fthr_gpsi, fthr_adsi):
         li_error = fthr_adsi.i_error % 10000 
 
         # 12345678901234567890
-        # S:0000 X:0000 E:0000
+        # S:0000 X:0000 S:99/9
 
         # show adsb line
-        f_lcd.lcd_display_string("S:{:4d} X:{:4d} E:{:4d}".format(li_short, li_extended, li_error), M_LIN_ADS, 0)
+        f_lcd.lcd_display_string("S:{:4d} X:{:4d} S:{:2d}/{:1d}".format(li_short, li_extended, fthr_gpsi.i_sat_in_view, fthr_gpsi.i_sat_used), M_LIN_ADS, 0)
 
-        # sleep (update each 5s)
-        time.sleep(5)
+        # sleep (update each 4s)
+        time.sleep(4)
 
 # -------------------------------------------------------------------------------------------------
 def main():
@@ -180,8 +180,8 @@ def main():
 
         # forever...until
         while lthr_gpsi.v_running:
-            # sleep 5s
-            time.sleep(5)
+            # sleep 4s
+            time.sleep(4)
 
     # em caso de erro...
     except (KeyboardInterrupt, SystemExit):

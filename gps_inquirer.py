@@ -60,6 +60,10 @@ class GPSInquirer(threading.Thread):
         self.__session = gps.gps(mode=gps.WATCH_ENABLE)  # |gps.WATCH_NEWSTYLE)
         assert self.__session
 
+        # satellites
+        self.__i_sat_in_view = 0
+        self.__i_sat_used = 0
+
         # position
         self.__f_latitude = None
         self.__f_longitude = None
@@ -184,6 +188,12 @@ class GPSInquirer(threading.Thread):
             # this will continue to loop and grab EACH set of gpsd info to clear the buffer
             self.__session.next()
 
+            # satellites in view
+            self.__i_sat_in_view = len(self.__session.satellites)
+
+            # satellites in use
+            self.__i_sat_used = self.__session.satellites_used
+
             # not TPV ?
             if not "TPV" == self.__session.data.get("class"):
                 # next
@@ -251,6 +261,16 @@ class GPSInquirer(threading.Thread):
     @v_running.setter
     def v_running(self, f_val):
         self.__v_running = f_val
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def i_sat_in_view(self):
+        return self.__i_sat_in_view
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def i_sat_used(self):
+        return self.__i_sat_used
 
     # ---------------------------------------------------------------------------------------------
     @property
