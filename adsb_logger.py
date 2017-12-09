@@ -17,7 +17,7 @@ __date__ = "2017/11"
 # python library
 import datetime
 import logging
-import optparse
+import argparse
 import os
 import subprocess
 import sys
@@ -99,21 +99,21 @@ def update_display(fthr_gpsi, fthr_adsi, fv_display=True):
         #  icbox-21 sophosAir
 
         # show system line
-        f_lcd.lcd_display_string(" {} {}".format(os.uname()[1], get_wifi()), M_LIN_SYS, 0)
+        l_lcd.lcd_display_string(" {} {}".format(os.uname()[1], get_wifi()), M_LIN_SYS, 0)
 
         # 12345678901234567890
         #  99/99/99  99:99:99
 
         # show date line
-        f_lcd.lcd_display_string(" {}".format(time.strftime("%d/%m/%y  %H:%M:%S")), M_LIN_DAT, 0)
+        l_lcd.lcd_display_string(" {}".format(time.strftime("%d/%m/%y  %H:%M:%S")), M_LIN_DAT, 0)
 
         # latitude
         lf_lat = fthr_gpsi.f_latitude
-        ls_lat = "{:0.2f}".format(lf_lat) if lf_lat is not None else "None"
+        ls_lat = "{:02.2f}".format(lf_lat) if lf_lat is not None else "None"
 
         # longitude
         lf_lng = fthr_gpsi.f_longitude
-        ls_lng = "{:0.2f}".format(lf_lng) if lf_lng is not None else "None"
+        ls_lng = "{:03.2f}".format(lf_lng) if lf_lng is not None else "None"
 
         # altitude
         # lf_alt = fthr_gpsi.f_altitude
@@ -123,7 +123,7 @@ def update_display(fthr_gpsi, fthr_adsi, fv_display=True):
         # F:0 P:-12.34/-012.34
 
         # show gps line
-        f_lcd.lcd_display_string("F:{} P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS, 0)
+        l_lcd.lcd_display_string("F:{} P:{}/{}".format(fthr_gpsi.session.fix.mode, ls_lat, ls_lng), M_LIN_GPS, 0)
 
         # ajusta para display
         li_short = fthr_adsi.i_short % 10000
@@ -134,7 +134,7 @@ def update_display(fthr_gpsi, fthr_adsi, fv_display=True):
         # S:0000 X:0000 S:99/9
 
         # show adsb line
-        f_lcd.lcd_display_string("S:{:4d} X:{:4d} S:{:2d}/{:1d}".format(li_short, li_extended, fthr_gpsi.i_sat_in_view, fthr_gpsi.i_sat_used), M_LIN_ADS, 0)
+        l_lcd.lcd_display_string("S:{:4d} X:{:4d} S:{:2d}/{:1d}".format(li_short, li_extended, fthr_gpsi.i_sat_in_view, fthr_gpsi.i_sat_used), M_LIN_ADS, 0)
 
         # sleep (update each 4s)
         time.sleep(4)
