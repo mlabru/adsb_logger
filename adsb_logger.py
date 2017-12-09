@@ -17,6 +17,7 @@ __date__ = "2017/11"
 # python library
 import datetime
 import logging
+import optparse
 import os
 import subprocess
 import sys
@@ -41,9 +42,6 @@ M_LIN_SYS = 1
 M_LIN_DAT = 2
 M_LIN_GPS = 3
 M_LIN_ADS = 4
-
-# flag DISPLAY
-M_DISPLAY = False
 
 # -------------------------------------------------------------------------------------------------
 def get_wifi():
@@ -71,7 +69,7 @@ def get_wifi():
     return ls_ssid
 
 # -------------------------------------------------------------------------------------------------
-def update_display(fthr_gpsi, fthr_adsi):
+def update_display(fthr_gpsi, fthr_adsi, fv_display=True):
     """
     update display
     """
@@ -83,7 +81,7 @@ def update_display(fthr_gpsi, fthr_adsi):
     assert fthr_adsi
 
     # no display ?
-    if not M_DISPLAY:
+    if not fv_display:
         # return
         return
 
@@ -146,6 +144,18 @@ def main():
     """
     drive app
     """
+    # create sys.arg parser
+    l_parser = argparse.ArgumentParser()
+    assert l_parser
+
+    # parser options
+    l_parser.add_argument("--display", dest="display", action="store_true", help="enable LCD display output")
+    l_parser.add_argument("--no-display", dest="display", action="store_false", help="disable LCD display")
+    l_parser.set_defaults(display=True)
+
+    # get arguments
+    l_args = l_parser.parse_args()
+
     # hostname
     ls_host = os.uname()[1]
 
@@ -172,7 +182,7 @@ def main():
     assert lthr_adsi
 
     # create thread update display
-    lthr_upd_dsp = threading.Thread(target=update_display, args=(lthr_gpsi, lthr_adsi))
+    lthr_upd_dsp = threading.Thread(target=update_display, args=(lthr_gpsi, lthr_adsi, l_args.display))
     assert lthr_upd_dsp
 
     try:
