@@ -11,23 +11,21 @@ initial release (Linux/Python)
 __version__ = "$revision: 0.1$"
 __author__ = "Milton Abrunhosa"
 __date__ = "2017/11"
-        
+
 # < imports >--------------------------------------------------------------------------------------
-            
+
 # python library
 # import logging
 import sys
 import threading
 import time
 
-# from timeit import default_timer as timer
-
 # < module defs >----------------------------------------------------------------------------------
-    
+
 # logger
 # M_LOG = logging.getLogger(__name__)
 # M_LOG.setLevel(logging.DEBUG)
-    
+
 # < class ADSBInquirer >---------------------------------------------------------------------------
 
 class ADSBInquirer(threading.Thread):
@@ -41,7 +39,7 @@ class ADSBInquirer(threading.Thread):
         """
         # logger
         # M_LOG.info(">> __init__")
-        
+
         # check input
         assert f_gpsi
         assert ffh_dat
@@ -55,41 +53,76 @@ class ADSBInquirer(threading.Thread):
         # data file
         self.__fh_dat = ffh_dat
 
+        # init squitter counters
+        self.__i_error = 0
+        self.__i_short = 0
+        self.__i_extended = 0
+
         # setting the thread running to true
-        # self.__v_running = True
-   
+        self.__v_running = True
+
     # ---------------------------------------------------------------------------------------------
     def run(self):
         """
         run
-        """        
+        """
         # logger
         # M_LOG.info(">> run")
-        
-        # init message counter
-        # li_msg_count = 0
 
         try:
             # forever...
             while self.__gps.v_running:
-                # build message toa, message, lst_pos
-                self.__fh_dat.write("{:0.7f}#{}#{}".format(time.time(), self.__gps.get_position(), sys.stdin.readline()))
+                # adsb message
+                ls_line = sys.stdin.readline()
 
-                # increment message counter
-                # li_msg_count += 1
+                # time of arrival
+                li_now = time.time()
+
+                # build message toa, lst_pos, message
+                self.__fh_dat.write("{:0.7f}#{}#{}".format(li_now, self.__gps.get_position(), ls_line))
+
+                # extended squitter ?
+                if len(ls_line) >= 30:
+                    # increment extended counter
+                    self.__i_extended += 1
+
+                # short squitter ?
+                elif len(ls_line) >= 16:
+                    # increment short counter
+                    self.__i_short += 1
+
+                # senão,...
+                else:
+                    # increment error counter
+                    self.__i_error += 1
 
         # em caso de erro...
         except (KeyboardInterrupt, SystemExit):
-            # flush stdout  
+            # flush stdout
             sys.stdout.flush()
 
-        # logger
-        # print "<<< total de mensagens: {}".format(li_msg_count)
+            # stop thread
+            self.__v_running = False
 
     # =============================================================================================
     # data
     # =============================================================================================
-    '''            
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def i_error(self):
+        return self.__i_error
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def i_extended(self):
+        return self.__i_extended
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def i_short(self):
+        return self.__i_short
+
     # ---------------------------------------------------------------------------------------------
     @property
     def v_running(self):
@@ -98,5 +131,5 @@ class ADSBInquirer(threading.Thread):
     @v_running.setter
     def v_running(self, f_val):
         self.__v_running = f_val
-    '''
+
 # < the end >--------------------------------------------------------------------------------------

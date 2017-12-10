@@ -33,22 +33,32 @@ def __set_time(time_tuple):
     #    long int tv_nsec;           /* nanoseconds. */
     #  };
     class timespec(ctypes.Structure):
+        """
+        timespec class
+        """
         _fields_ = [("tv_sec", ctypes.c_long),
                     ("tv_nsec", ctypes.c_long)]
 
-    librt = ctypes.CDLL(ctypes.util.find_library("rt"))
+    l_librt = ctypes.CDLL(ctypes.util.find_library("rt"))
 
-    ts = timespec()
-    ts.tv_sec = int(time.mktime(datetime.datetime(*time_tuple[:6]).timetuple()))
-    ts.tv_nsec = time_tuple[6] * 1000000 # millisecond to nanosecond
+    l_ts = timespec()
+    assert l_ts
+
+    l_ts.tv_sec = int(time.mktime(datetime.datetime(*time_tuple[:6]).timetuple()))
+    l_ts.tv_nsec = time_tuple[6] * 1000000 # millisecond to nanosecond
 
     # http://linux.die.net/man/3/clock_settime
-    librt.clock_settime(CLOCK_REALTIME, ctypes.byref(ts))
+    l_librt.clock_settime(CLOCK_REALTIME, ctypes.byref(l_ts))
 
 # -------------------------------------------------------------------------------------------------
 def main():
+    """
+    drive application
+    """
+    # display
+    print "Current date and time (before): ", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # forever until...
+    # forever...until
     while True:
         try:
             # read stdin
@@ -84,6 +94,9 @@ def main():
 
             # ok, quit
             break
+
+    # display
+    print "Current date and time (after): ", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # -------------------------------------------------------------------------------------------------
 # this is the bootstrap process

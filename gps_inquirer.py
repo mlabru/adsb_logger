@@ -11,12 +11,11 @@ initial release (Linux/Python)
 __version__ = "$revision: 0.1$"
 __author__ = "Milton Abrunhosa"
 __date__ = "2017/11"
-        
+
 # < imports >--------------------------------------------------------------------------------------
-            
+
 # python library
-import logging
-import os
+# import logging
 import threading
 import time
 
@@ -24,16 +23,16 @@ import time
 import gps
 
 # < module defs >----------------------------------------------------------------------------------
-    
+
 # logger
-M_LOG = logging.getLogger(__name__)
-M_LOG.setLevel(logging.DEBUG)
+# M_LOG = logging.getLogger(__name__)
+# M_LOG.setLevel(logging.DEBUG)
 
 # counters
 M_CALIBRA_COUNT = 20
 M_POSITION_COUNT = 300
 M_WEIGHT_COUNT = 1000
-    
+
 # < class GPSInquirer >----------------------------------------------------------------------------
 
 class GPSInquirer(threading.Thread):
@@ -47,7 +46,7 @@ class GPSInquirer(threading.Thread):
         """
         # logger
         # M_LOG.info(">> __init__")
-        
+
         # check input
         assert ffh_ctl
 
@@ -60,7 +59,11 @@ class GPSInquirer(threading.Thread):
         # starting the stream of info
         self.__session = gps.gps(mode=gps.WATCH_ENABLE)  # |gps.WATCH_NEWSTYLE)
         assert self.__session
-        
+
+        # satellites
+        self.__i_sat_in_view = 0
+        self.__i_sat_used = 0
+
         # position
         self.__f_latitude = None
         self.__f_longitude = None
@@ -70,12 +73,12 @@ class GPSInquirer(threading.Thread):
 
         # setting the thread running to true
         self.__v_running = True
-   
+
     # ---------------------------------------------------------------------------------------------
     def init_position(self, fi_count=M_CALIBRA_COUNT):
         """
         get initial position
-        """        
+        """
         # logger
         # M_LOG.info(">> init_position")
 
@@ -94,7 +97,7 @@ class GPSInquirer(threading.Thread):
             if not "TPV" == self.__session.data.get("class"):
                 continue
 
-            # fix 2D or 3D ?
+            # 2D or 3D fix ?
             if self.__session.fix.mode in [2, 3]:
                 # latitude
                 lf_lat += self.__session.fix.latitude
@@ -104,7 +107,7 @@ class GPSInquirer(threading.Thread):
                 lf_lng += self.__session.fix.longitude
                 # M_LOG.debug("fix.longitude: {}".format(lf_lng))
 
-                # fix 3D ?
+                # 3D fix ?
                 if 3 == self.__session.fix.mode:
                     # altitude
                     lf_alt += self.__session.fix.altitude
@@ -141,69 +144,33 @@ class GPSInquirer(threading.Thread):
             self.__fh_ctl.flush()
 
             # logger
-            M_LOG.info("init_position: {}/{}({})/{}({})".format(self.__f_latitude, self.__f_longitude, li_count_2d, self.__f_altitude, li_count_3d))
+            # M_LOG.info("init_position: {}/{}({})/{}({})".format(self.__f_latitude, self.__f_longitude, li_count_2d, self.__f_altitude, li_count_3d))
 
     # ---------------------------------------------------------------------------------------------
     def get_position(self):
         """
         get position
-        """        
+        """
         # logger
         # M_LOG.info(">> get_position")
 
         # return
         return (self.__f_latitude, self.__f_longitude, self.__f_altitude)
-        
-    # ---------------------------------------------------------------------------------------------
-    def get_serial(self):
-        """
-        extract serial from cpuinfo file
-        """
-        # logger
-        # M_LOG.info(">> get_serial")
-        
-        # init string
-        ls_serial = "0000000000000000"
-
-        try:
-            # open cpuinfo
-            lfh_in = open("/proc/cpuinfo", 'r')
-
-            # scan cpuinfo lines....
-            for ls_line in lfh_in:
-                # serial no line ?
-                if "Serial" == ls_line[0:6]:
-                    # get serial number
-                    ls_serial = ls_line[10:26]
-
-            # close file
-            lfh_in.close()
-
-        # em caso de erro
-        except:
-            ls_serial = None
-     
-        # return 
-        return ls_serial
 
     # ---------------------------------------------------------------------------------------------
     def run(self):
         """
         run
-        """        
+        """
         # logger
         # M_LOG.info(">> run")
-        
+
         # get station number
-        ls_serial = self.get_serial()
+        ls_serial = get_serial()
 
         # log station: time, station no
         self.__fh_ctl.write("$STN,{:0.7f},{}\n".format(time.time(), ls_serial))
         self.__fh_ctl.flush()
-
-        # get initial position
-        # lthr_cal_pos = threading.Thread(target=self.init_position, args=(M_CALIBRA_COUNT,))
-        # lthr_cal_pos.start()
 
         # get initial position
         self.init_position(M_CALIBRA_COUNT)
@@ -221,12 +188,18 @@ class GPSInquirer(threading.Thread):
             # this will continue to loop and grab EACH set of gpsd info to clear the buffer
             self.__session.next()
 
+            # satellites in view
+            self.__i_sat_in_view = len(self.__session.satellites)
+
+            # satellites in use
+            self.__i_sat_used = self.__session.satellites_used
+
             # not TPV ?
             if not "TPV" == self.__session.data.get("class"):
                 # next
                 continue
 
-            # fix 2D or 3D ?
+            # 2D or 3D fix ?
             if (self.__session.fix.mode in [2, 3]) and (self.__i_pos_count >= M_CALIBRA_COUNT):
                 # counter
                 li_count = self.__i_pos_count
@@ -240,7 +213,7 @@ class GPSInquirer(threading.Thread):
                 # longitude
                 lf_lng = ((lf_lng * li_count) + self.__session.fix.longitude) / self.__i_pos_count
 
-                # fix 3D ?
+                # 3D fix ?
                 if 3 == self.__session.fix.mode:
                     # altitude
                     lf_alt = ((lf_alt * li_count) + self.__session.fix.altitude) / self.__i_pos_count
@@ -264,7 +237,22 @@ class GPSInquirer(threading.Thread):
     # =============================================================================================
     # data
     # =============================================================================================
-            
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def f_altitude(self):
+        return self.__f_altitude
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def f_latitude(self):
+        return self.__f_latitude
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def f_longitude(self):
+        return self.__f_longitude
+
     # ---------------------------------------------------------------------------------------------
     @property
     def v_running(self):
@@ -273,10 +261,52 @@ class GPSInquirer(threading.Thread):
     @v_running.setter
     def v_running(self, f_val):
         self.__v_running = f_val
-        
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def i_sat_in_view(self):
+        return self.__i_sat_in_view
+
+    # ---------------------------------------------------------------------------------------------
+    @property
+    def i_sat_used(self):
+        return self.__i_sat_used
+
     # ---------------------------------------------------------------------------------------------
     @property
     def session(self):
         return self.__session
+
+# -------------------------------------------------------------------------------------------------
+def get_serial():
+    """
+    extract serial from cpuinfo file
+    """
+    # logger
+    # M_LOG.info(">> get_serial")
+
+    # init string
+    ls_serial = "0000000000000000"
+
+    try:
+        # open cpuinfo
+        lfh_in = open("/proc/cpuinfo", 'r')
+
+        # scan cpuinfo lines....
+        for ls_line in lfh_in:
+            # serial no line ?
+            if "Serial" == ls_line[0:6]:
+                # get serial number
+                ls_serial = ls_line[10:26]
+
+        # close file
+        lfh_in.close()
+
+    # em caso de erro...
+    except:
+        ls_serial = None
+
+    # return
+    return ls_serial
 
 # < the end >--------------------------------------------------------------------------------------
