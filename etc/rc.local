@@ -1,0 +1,39 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+# Print the IP address
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+fi
+
+# start the gpsd
+echo "Starting GPSD"
+/usr/local/sbin/gpsd /dev/ttyAMA0 -G -n -F /var/run/gpsd.sock
+
+# WORKAROUND to auto start the gpsd
+gpspipe -r | python /home/mlabru/Public/wrk.adsb/adsb_logger/gps_set_clock.py
+
+# restart ntpd
+echo "Restarting ntpd"
+service ntp restart
+
+# start the rpi_gpio_ntp
+# echo "Starting rpi_gpio_ntp..."
+# /usr/local/bin/rpi_gpio_ntp -N 1 -g 18
+
+# start the adsb_logger
+echo "Starting adsb_logger..."
+su mlabru -c "sh /home/mlabru/Public/wrk.adsb/adsb_logger/adsb_logger.sh" &
+
+exit 0
