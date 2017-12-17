@@ -96,7 +96,7 @@ def main():
             break
 
     # display
-    print "Current date and time (after): ", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # print "Current date and time (after): ", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # -------------------------------------------------------------------------------------------------
 # this is the bootstrap process
