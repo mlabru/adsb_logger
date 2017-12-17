@@ -36,4 +36,8 @@ service ntp restart
 echo "Starting adsb_logger..."
 su mlabru -c "sh /home/mlabru/Public/wrk.adsb/adsb_logger/adsb_logger.sh" &
 
+# setup real time clock
+echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
+hwclock -s
+
 exit 0
